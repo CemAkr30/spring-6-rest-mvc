@@ -1,0 +1,13 @@
+logging:
+  level:
+    sa:
+      springframework: debug
+
+server:
+  port: 8084
+
+
+spring:
+  profiles:
+    active:
+      - postgre
