@@ -23,6 +23,7 @@ import sa.springframework.spring6restmvc.service.BeerService;
 import sa.springframework.spring6restmvc.service.BeerServiceImpl;
 import sa.springframework.spring6restmvc.service.BeerServiceJPA;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -46,12 +48,9 @@ class BeerControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Autowired
-    RestTemplateBuilder restTemplateBuilder;
-
-
     BeerMapper beerMapper;
 
+    RestTemplateBuilder restTemplateBuilder;
 
     BeerRepository beerRepository;
 
@@ -67,15 +66,16 @@ class BeerControllerTest {
     @Test
     void testCreateNewBeer() throws Exception {
         objectMapper.findAndRegisterModules();
-        BeerDTO beer = (BeerDTO) beerServiceImpl.listBeers(""
-        ,1,1).get();
+        List<BeerDTO> beer =  beerServiceImpl.listBeers(""
+        ,1,1).get().toList();
         //log.info(beer.toString());
         log.info(objectMapper.writeValueAsString(beer));
-        beer.setId(null);
-        BeerDTO beerSaved = beerServiceImpl.listBeers("",1,1).get(1);
-        given(beerService.saveNewBeer(any(Beer.class))).willReturn(beerSaved);
+        beer.get(0).setId(null);
+        List<BeerDTO> beerSaved =  beerServiceImpl.listBeers("",1,1).get().toList();
+        given(beerService.saveNewBeer(any(Beer.class))).willReturn(beerSaved.get(0));
 
         mockMvc.perform(post("/api/beer/create")
+                        .with(httpBasic("admin","1905"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(beer)))
@@ -85,7 +85,7 @@ class BeerControllerTest {
 
     @Test
     void testUpdateBeer() throws Exception {
-        BeerDTO beer = beerServiceJpa.listBeers("",1,1).get(0);
+        BeerDTO beer = (BeerDTO) beerServiceJpa.listBeers("",1,1).get();
 
         mockMvc.perform(put("/api/beer/update/" + beer.getId())
                 .accept(MediaType.APPLICATION_JSON)

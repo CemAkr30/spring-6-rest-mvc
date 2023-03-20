@@ -2,6 +2,9 @@ logging:
   level:
     sa:
       springframework: debug
+    org:
+      springframework:
+        security: trace
 
 server:
   port: 8084
@@ -11,3 +14,7 @@ spring:
   profiles:
     active:
       - postgre
+  security:
+    user:
+      name: admin
+      password: 1905
